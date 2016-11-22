@@ -28,8 +28,8 @@ class Avio:
         columnMatch = -1
         processHeader = False
         headers = list()
-        oFile = open(outputFile)
-        with open(inputFile) as iFile:
+        oFile = open(outputFile, 'w')
+        with open(inputFile, 'r') as iFile:
             for line in iFile:
                 row += 1
                 parts = line.split(",")
@@ -60,6 +60,18 @@ class Avio:
                 else:
                     processHeader = True
                     i = 0
+                    try:
+                        while not headers.__contains__(parts[columnMatch+i]) & parts[columnMatch+i]:
+                            headers.append(parts[columnMatch+i])
+                            i += 1
+                        n = headers.__len__() - 1
+                        for i in n:
+                            oFile.write(headers.__getitem__(i))
+                            oFile.write(',')
+                        oFile.write(headers.__getitem__(n))
+                        oFile.write('\n')
+                    except:
+                        print "Array Index Out of Bounds"
 
 
 
@@ -67,7 +79,7 @@ class Avio:
 
     def main(self):
         #Fetch this data from avio.properties file or set a config file
-        flightsIds = {}
+        flightIds = list()
         filePrefix = "Chart_"
         dir = ""
         refFilePath = ""
@@ -82,11 +94,24 @@ class Avio:
             print "Key = "+key+" Value = "+refList[key]
             inputFile = csv.reader(dir+refList[key]+".csv")
             if inputFile != None:
-                for flightId in flightsIds:
+                for flightId in flightIds:
                     path = os.path.dirname(os.path.abspath(dir+"/"+flightId))
                     if not os.path.exists(path):
                         os.makedirs(path)
                     outputFile = path+flightId+"_"+refList[key]+"_"+parameter+".csv"
                     app.extractParamFromFile(inputFile, outputFile, key, flightId)
+            else:
+                print "Data source  file not found"
+
+        if not parameterList & len(refList) != 0:
+            for key in refList:
+                parameter = app.getParameterCore(key)
+                parameterList.__add__(parameter)
+
+        #consolidate
+        for flightId in flightIds:
+            flightOutputPath = os.path.dirname(os.path.abspath(dir+"/"+flightId))
+
+
 
 
